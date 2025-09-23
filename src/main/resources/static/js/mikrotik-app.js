@@ -1,10 +1,35 @@
 // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+const CACHE_EXPIRY_MINUTES = 5; // Время истечения кэша в минутах
 let toastElement, toastMessage, toast;
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', function() {
+    checkCacheExpiry();
     initializeApp();
 });
+
+// ===== ПРОВЕРКА ИСТЕЧЕНИЯ КЭША =====
+function checkCacheExpiry() {
+    // Получаем параметр lastLoginTime из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const lastLoginTimeParam = urlParams.get('lastLoginTime') || '0';
+
+    // Парсим время последнего входа
+    const lastLoginTime = parseInt(lastLoginTimeParam);
+    const currentTime = Date.now();
+
+    // Проверяем, прошло ли больше указанного времени
+    const minutesPassed = (currentTime - lastLoginTime) / (1000 * 60);
+
+    if (minutesPassed > CACHE_EXPIRY_MINUTES) {
+        // Обновляем параметр с текущим временем и перезагружаем страницу
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set('lastLoginTime', currentTime.toString());
+        window.location.href = currentUrl.toString();
+        console.log("Reloading page due to cache expiry.");
+        return;
+    }
+}
 
 function initializeApp() {
     // Подготовка уведомлений
